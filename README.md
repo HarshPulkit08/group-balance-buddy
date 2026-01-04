@@ -1,73 +1,69 @@
-# Welcome to your Lovable project
+# SplitEase (formerly Group Balance Buddy)
 
-## Project info
+SplitEase is a premium, multi-group expense management platform designed to make splitting bills and tracking shared costs effortless and beautiful. Built with modern web technologies and a focus on premium user experience, it allows users to manage multiple trips, upload receipts, and view detailed financial insights.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+![SplitEase Dashboard](https://group-balance-buddy-hp7.web.app/og-image.png)
 
-## How can I edit this code?
+## 🚀 Premium Features
 
-There are several ways of editing your application.
+- **Multiple Trips/Groups**: Create and manage separate journeys or groups for different occasions.
+- **Unified Dashboard**: Global visibility into your monthly spending across all active trips.
+- **Smart Settlements**: Optimized algorithm to minimize transactions and "settle up" with simple, clear steps.
+- **Receipt Management**: Securely upload receipt images to Firebase Storage and view them in a premium, zoomable lightbox.
+- **Visual Analytics**: Dynamic charts (via Recharts) for monthly spending trends and individual split breakdowns.
+- **Glassmorphic UI**: A state-of-the-art design featuring backdrop blurs, soft gradients, and smooth micro-animations.
+- **Firebase Core**: Real-time data synchronization with Firestore and secure Authentication.
 
-**Use Lovable**
+## 🛠️ Tech Stack
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+- **Framework**: [React](https://reactjs.org/) + [Vite](https://vitejs.dev/)
+- **Backend**: [Firebase](https://firebase.google.com/) (Auth, Firestore, Storage, Hosting)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/) + [Shadcn UI](https://ui.shadcn.com/)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **Charts**: [Recharts](https://recharts.org/)
+- **Animations**: Framer Motion & CSS Keyframes
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🏁 Getting Started
 
-**Use your preferred IDE**
+### Prerequisites
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- Node.js (v18+)
+- A Firebase Project (for Authentication, Firestore, and Storage)
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Installation
 
-Follow these steps:
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/HarshPulkit08/group-balance-buddy.git
+   cd group-balance-buddy
+   ```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+3. Configure Firebase:
+   Create a `.env` or update `src/lib/firebase.ts` with your Firebase project credentials.
 
-# Step 3: Install the necessary dependencies.
-npm i
+### Running Locally
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+To start the development server:
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### Building for Production
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+To create a production build and deploy to Firebase:
+```bash
+npm run build
+firebase deploy
+```
 
-**Use GitHub Codespaces**
+## 📄 License
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+This project is open-source and available under the [MIT License](LICENSE).
 
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+---
+*Created with ❤️ by Harsh Pulkit*

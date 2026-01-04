@@ -6,24 +6,32 @@ import { UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface AddMemberDialogProps {
-  onAdd: (name: string) => boolean;
+  onAdd: (name: string) => Promise<boolean> | boolean;
 }
 
 export function AddMemberDialog({ onAdd }: AddMemberDialogProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
 
-    const success = onAdd(name);
-    if (success) {
-      toast.success(`${name.trim()} added to the group`);
-      setName('');
-      setOpen(false);
-    } else {
-      toast.error('Member already exists');
+    setIsSubmitting(true);
+    try {
+      const success = await onAdd(name);
+      if (success) {
+        toast.success(`${name.trim()} added to the group`);
+        setName('');
+        setOpen(false);
+      } else {
+        toast.error('Member already exists');
+      }
+    } catch (error) {
+      toast.error('Failed to add member');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
