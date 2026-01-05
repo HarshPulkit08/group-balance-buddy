@@ -18,11 +18,18 @@ export function useGroups() {
         );
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
-            const g = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data(),
-                createdAt: (doc.data().createdAt as Timestamp).toDate(),
-            } as Group));
+            const g = snapshot.docs.map(doc => {
+                const data = doc.data();
+                return {
+                    id: doc.id,
+                    ...data,
+                    createdAt: (data.createdAt as Timestamp).toDate(),
+                    expenses: ((data.expenses || []) as any[]).map(e => ({
+                        ...e,
+                        createdAt: e.createdAt instanceof Timestamp ? e.createdAt.toDate() : new Date(e.createdAt || Date.now())
+                    })),
+                } as Group;
+            });
             setGroups(g);
             setLoading(false);
         });
