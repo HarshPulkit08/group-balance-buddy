@@ -30,17 +30,25 @@ export function useGroups() {
         return unsubscribe;
     }, [user]);
 
-    const createGroup = useCallback(async (name: string, description?: string) => {
+    const createGroup = useCallback(async (name: string, description?: string, type: 'trip' | 'household' = 'trip') => {
         if (!user) return;
+
+        const initialMember: Member = {
+            id: crypto.randomUUID(),
+            name: user.displayName || user.email?.split('@')[0] || 'Me',
+            balance: 0,
+            userId: user.uid
+        };
 
         const newGroup = {
             name,
             description: description || '',
             createdAt: Timestamp.now(),
             createdBy: user.uid,
-            members: [],
+            members: [initialMember],
             expenses: [],
             isSettled: false,
+            type
         };
 
         await addDoc(collection(db, 'groups'), newGroup);

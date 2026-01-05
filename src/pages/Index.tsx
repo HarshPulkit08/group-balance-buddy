@@ -34,6 +34,7 @@ const Index = () => {
     addExpense,
     editExpense,
     removeExpense,
+    resetMonth,
     loading
   } = useExpenseSplitter(id);
 
@@ -47,7 +48,11 @@ const Index = () => {
       .filter(e => isSameMonth(new Date(e.createdAt), now))
       .reduce((sum, e) => sum + e.amount, 0);
 
-    const userBalance = balances.find(b => b.userId === user?.uid || b.name === user?.email)?.balance || 0;
+    const userBalance = balances.find(b =>
+      b.userId === user?.uid ||
+      b.name === user?.email ||
+      b.name.toLowerCase() === (user?.email?.split('@')[0].toLowerCase() ?? '')
+    )?.balance || 0;
 
     return { thisMonthTotal, userBalance };
   }, [expenses, balances, user]);
@@ -59,6 +64,17 @@ const Index = () => {
         toast.success('Trip marked as settled!');
       } catch (error) {
         toast.error('Failed to settle trip');
+      }
+    }
+  };
+
+  const handleSettleMonth = async () => {
+    if (confirm('Are you sure you want to settle this month? This will clear current expenses and save them to history.')) {
+      try {
+        await resetMonth();
+        toast.success('Month settled! Starting fresh.');
+      } catch (error) {
+        toast.error('Failed to settle month');
       }
     }
   };
@@ -133,15 +149,29 @@ const Index = () => {
             </div>
             <div className="flex items-center gap-3">
               {!currentGroup?.isSettled && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleSettleAll}
-                  className="hidden md:flex gap-2 border-green-200 text-green-700 hover:bg-green-50 rounded-full h-9"
-                >
-                  <CheckCircle2 className="w-4 h-4" />
-                  Close Trip
-                </Button>
+                <>
+                  {currentGroup.type === 'household' ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleSettleMonth}
+                      className="hidden md:flex gap-2 border-primary/20 text-primary hover:bg-primary/10 rounded-full h-9"
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                      Settle Month
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleSettleAll}
+                      className="hidden md:flex gap-2 border-green-200 text-green-700 hover:bg-green-50 rounded-full h-9"
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                      Close Trip
+                    </Button>
+                  )}
+                </>
               )}
               <Button variant="ghost" size="icon" onClick={handleLogout} className="text-muted-foreground hover:text-destructive rounded-full">
                 <LogOut className="w-5 h-5" />

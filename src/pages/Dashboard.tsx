@@ -4,16 +4,18 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Wallet, Plus, Trash2, ArrowRight, Loader2, Calendar, TrendingUp, Users, Receipt, CheckCircle2 } from 'lucide-react';
+import { Wallet, Plus, Trash2, ArrowRight, Loader2, Calendar, TrendingUp, Users, Receipt, CheckCircle2, Home, Plane } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { format, isSameMonth } from 'date-fns';
 import { toast } from 'sonner';
 import { useAuth } from '@/components/AuthContext';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const Dashboard = () => {
     const { user, logout } = useAuth();
     const { groups, loading, createGroup, deleteGroup } = useGroups();
     const [newGroupName, setNewGroupName] = useState('');
+    const [groupType, setGroupType] = useState<'trip' | 'household'>('trip');
     const [isCreating, setIsCreating] = useState(false);
     const [open, setOpen] = useState(false);
 
@@ -30,12 +32,13 @@ const Dashboard = () => {
         if (!newGroupName.trim()) return;
         setIsCreating(true);
         try {
-            await createGroup(newGroupName);
-            toast.success('New trip created!');
+            await createGroup(newGroupName, '', groupType);
+            toast.success(groupType === 'trip' ? 'New trip created!' : 'New household created!');
             setNewGroupName('');
+            setGroupType('trip');
             setOpen(false);
         } catch (error) {
-            toast.error('Failed to create trip');
+            toast.error('Failed to create group');
         } finally {
             setIsCreating(false);
         }
@@ -44,12 +47,12 @@ const Dashboard = () => {
     const handleDeleteGroup = async (e: React.MouseEvent, id: string) => {
         e.preventDefault();
         e.stopPropagation();
-        if (confirm('Are you sure you want to delete this trip? All data will be lost.')) {
+        if (confirm('Are you sure you want to delete this group? All data will be lost.')) {
             try {
                 await deleteGroup(id);
-                toast.success('Trip deleted');
+                toast.success('Group deleted');
             } catch (error) {
-                toast.error('Failed to delete trip');
+                toast.error('Failed to delete group');
             }
         }
     };
@@ -62,7 +65,7 @@ const Dashboard = () => {
                         <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full scale-150 animate-pulse"></div>
                         <Loader2 className="w-12 h-12 animate-spin text-primary relative" />
                     </div>
-                    <p className="text-muted-foreground font-medium animate-pulse">Loading your trips...</p>
+                    <p className="text-muted-foreground font-medium animate-pulse">Loading your groups...</p>
                 </div>
             </div>
         );
@@ -127,18 +130,28 @@ const Dashboard = () => {
                             <DialogTrigger asChild>
                                 <Button className="h-full w-full max-w-[200px] rounded-2xl gap-2 shadow-xl shadow-primary/20 border-t border-white/10 group">
                                     <Plus className="w-5 h-5 group-hover:rotate-90 transition-transform" />
-                                    <span className="font-bold">New Trip</span>
+                                    <span className="font-bold">New Group</span>
                                 </Button>
                             </DialogTrigger>
                             <DialogContent className="sm:max-w-[425px] rounded-3xl">
                                 <DialogHeader>
-                                    <DialogTitle className="text-2xl font-bold">Start a new trip</DialogTitle>
-                                    <CardDescription>Enter a name to begin splitting expenses.</CardDescription>
+                                    <DialogTitle className="text-2xl font-bold">Start a new group</DialogTitle>
+                                    <CardDescription>Create a trip or a shared household.</CardDescription>
                                 </DialogHeader>
                                 <form onSubmit={handleCreateGroup} className="space-y-4 mt-4">
+                                    <Tabs value={groupType} onValueChange={(v) => setGroupType(v as any)} className="w-full">
+                                        <TabsList className="grid w-full grid-cols-2 h-11 p-1 mb-4 rounded-xl">
+                                            <TabsTrigger value="trip" className="gap-2 rounded-lg font-bold">
+                                                <Plane className="w-4 h-4" /> Trip
+                                            </TabsTrigger>
+                                            <TabsTrigger value="household" className="gap-2 rounded-lg font-bold">
+                                                <Home className="w-4 h-4" /> Household
+                                            </TabsTrigger>
+                                        </TabsList>
+                                    </Tabs>
                                     <div className="space-y-2">
                                         <Input
-                                            placeholder="e.g. Europe 2024 ✈️"
+                                            placeholder={groupType === 'trip' ? "e.g. Europe 2024 ✈️" : "e.g. Flat 303 🏠"}
                                             value={newGroupName}
                                             onChange={(e) => setNewGroupName(e.target.value)}
                                             className="h-12 rounded-xl border-2 focus-visible:ring-primary/20"
@@ -147,7 +160,7 @@ const Dashboard = () => {
                                     </div>
                                     <Button type="submit" className="w-full h-12 rounded-xl text-lg font-bold" disabled={isCreating || !newGroupName.trim()}>
                                         {isCreating ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                                        Launch Trip
+                                        {groupType === 'trip' ? 'Launch Trip' : 'Create Household'}
                                     </Button>
                                 </form>
                             </DialogContent>
@@ -157,8 +170,8 @@ const Dashboard = () => {
 
                 <div className="flex items-center justify-between mb-6">
                     <div>
-                        <h2 className="text-2xl font-bold tracking-tight">Your Journeys</h2>
-                        <p className="text-sm text-muted-foreground">Select a trip to manage expenses</p>
+                        <h2 className="text-2xl font-bold tracking-tight">Your Groups</h2>
+                        <p className="text-sm text-muted-foreground">Select a group to manage expenses</p>
                     </div>
                 </div>
 
@@ -167,12 +180,12 @@ const Dashboard = () => {
                         <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6">
                             <Calendar className="w-10 h-10 text-primary" />
                         </div>
-                        <h3 className="text-2xl font-bold mb-2">Adventure Awaits!</h3>
+                        <h3 className="text-2xl font-bold mb-2">Get Started!</h3>
                         <p className="text-muted-foreground text-center max-w-xs mb-8">
-                            You haven't created any trips yet. Start your first journey to begin splitting expenses with friends.
+                            You haven't created any groups yet. Start your first group or trip to begin splitting expenses.
                         </p>
                         <Button onClick={() => setOpen(true)} className="rounded-full px-8 h-12 text-lg shadow-lg shadow-primary/20">
-                            Create first trip
+                            Create first group
                         </Button>
                     </div>
                 ) : (
@@ -219,7 +232,7 @@ const Dashboard = () => {
                                     </CardContent>
                                     <CardFooter className="pt-0 pb-8 px-8 flex justify-between items-center text-primary font-bold text-sm">
                                         <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0">
-                                            Manage trip <ArrowRight className="w-4 h-4" />
+                                            Manage group <ArrowRight className="w-4 h-4" />
                                         </div>
                                         <Button
                                             variant="ghost"

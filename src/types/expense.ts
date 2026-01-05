@@ -31,6 +31,7 @@ export interface Group {
   members: Member[];
   expenses: Expense[];
   isSettled: boolean;
+  type: 'trip' | 'household';
 }
 
 export type Category = {
