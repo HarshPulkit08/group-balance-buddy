@@ -4,6 +4,7 @@ export interface Member {
   balance: number;
   avatar?: string;
   userId?: string; // Optional: link to a registered user
+  upiId?: string;
 }
 
 export interface Expense {
@@ -14,11 +15,15 @@ export interface Expense {
   createdAt: Date;
   receiptUrl?: string;
   categoryId?: string;
+  type?: 'expense' | 'settlement';
+  relatedMemberId?: string; // For settlements: who received the money
 }
 
 export interface Settlement {
   from: string;
+  fromId: string;
   to: string;
+  toId: string;
   amount: number;
 }
 

@@ -7,6 +7,8 @@ import { AddExpenseForm } from '@/components/AddExpenseForm';
 import { SettlementCard } from '@/components/SettlementCard';
 import { SpendingChart } from '@/components/SpendingChart';
 import { AddMemberDialog } from '@/components/AddMemberDialog';
+import { MemberDetailsDialog } from '@/components/MemberDetailsDialog';
+import { SettleDebtDialog } from '@/components/SettleDebtDialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -21,6 +23,8 @@ import { format, isSameMonth } from 'date-fns';
 const Index = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [editingMember, setEditingMember] = useState<any | null>(null);
+  const [settlingMember, setSettlingMember] = useState<any | null>(null);
   const { user, logout } = useAuth();
   const {
     members,
@@ -34,6 +38,8 @@ const Index = () => {
     addExpense,
     editExpense,
     removeExpense,
+    addSettlement,
+    updateMember,
     resetMonth,
     loading
   } = useExpenseSplitter(id);
@@ -200,6 +206,8 @@ const Index = () => {
                       key={member.id}
                       member={member}
                       onRemove={handleRemoveMember}
+                      onEdit={setEditingMember}
+                      onSettle={setSettlingMember}
                     />
                   ))}
                 </div>
@@ -209,6 +217,20 @@ const Index = () => {
                   </div>
                 )}
                 <AddMemberDialog onAdd={addMember} />
+                <MemberDetailsDialog
+                  isOpen={!!editingMember}
+                  member={editingMember}
+                  onClose={() => setEditingMember(null)}
+                  onUpdate={updateMember}
+                />
+                <SettleDebtDialog
+                  isOpen={!!settlingMember}
+                  debtor={settlingMember}
+                  creditors={members}
+                  settlements={settlements}
+                  onClose={() => setSettlingMember(null)}
+                  onSettle={addSettlement}
+                />
               </CardContent>
             </Card>
           </div>

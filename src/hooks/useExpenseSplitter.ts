@@ -57,6 +57,24 @@ export function useExpenseSplitter(groupId?: string) {
     return true;
   }, [user, groupId, members]);
 
+  const updateMember = useCallback(async (memberId: string, updates: Partial<Member>) => {
+    if (!user || !groupId) return;
+
+    // We need to update the specific member in the array. 
+    // Firestore array updates are tricky if not adding/removing. 
+    // Safest is to read, modify, write entire members array.
+    // Since we subscribe to members, we have the latest.
+
+    const updatedMembers = members.map(m =>
+      m.id === memberId ? { ...m, ...updates } : m
+    );
+
+    const groupDocRef = doc(db, 'groups', groupId);
+    await updateDoc(groupDocRef, {
+      members: updatedMembers
+    });
+  }, [user, groupId, members]);
+
   const removeMember = useCallback(async (id: string) => {
     if (!user || !groupId) return;
     const memberToRemove = members.find(m => m.id === id);
@@ -78,6 +96,24 @@ export function useExpenseSplitter(groupId?: string) {
       note: note.trim(),
       createdAt: new Date(),
       ...(receiptUrl ? { receiptUrl } : {}),
+    };
+
+    const groupDocRef = doc(db, 'groups', groupId);
+    await updateDoc(groupDocRef, {
+      expenses: arrayUnion(newExpense)
+    });
+  }, [user, groupId]);
+
+  const addSettlement = useCallback(async (payerId: string, receiverId: string, amount: number) => {
+    if (!user || !groupId) return;
+    const newExpense: Expense = {
+      id: crypto.randomUUID(),
+      payerId,
+      amount,
+      note: 'Settlement Payment',
+      createdAt: new Date(),
+      type: 'settlement',
+      relatedMemberId: receiverId
     };
 
     const groupDocRef = doc(db, 'groups', groupId);
@@ -189,12 +225,26 @@ export function useExpenseSplitter(groupId?: string) {
     const balanceMap = new Map<string, number>();
     members.forEach(m => balanceMap.set(m.id, 0));
 
-    const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
-    const share = members.length > 0 ? totalExpenses / members.length : 0;
+    // Only count 'expense' types for the total group cost
+    const normalExpenses = expenses.filter(e => e.type !== 'settlement');
+    const totalGroupCost = normalExpenses.reduce((sum, e) => sum + e.amount, 0);
+    const share = members.length > 0 ? totalGroupCost / members.length : 0;
 
     expenses.forEach(e => {
-      const current = balanceMap.get(e.payerId) ?? 0;
-      balanceMap.set(e.payerId, current + e.amount);
+      if (e.type === 'settlement') {
+        // Settlement Logic: Payer pays Receiver.
+        // Payer balance increases (less debt), Receiver balance decreases (less credit).
+        if (e.relatedMemberId) {
+          const payerBal = balanceMap.get(e.payerId) ?? 0;
+          const receiverBal = balanceMap.get(e.relatedMemberId) ?? 0;
+          balanceMap.set(e.payerId, payerBal + e.amount);
+          balanceMap.set(e.relatedMemberId, receiverBal - e.amount);
+        }
+      } else {
+        // Normal Expense Logic
+        const current = balanceMap.get(e.payerId) ?? 0;
+        balanceMap.set(e.payerId, current + e.amount);
+      }
     });
 
     return members.map(m => ({
@@ -228,7 +278,9 @@ export function useExpenseSplitter(groupId?: string) {
       if (amount > 0.01) {
         result.push({
           from: debtor.name,
+          fromId: debtor.id,
           to: creditor.name,
+          toId: creditor.id,
           amount: Math.round(amount * 100) / 100,
         });
       }
@@ -271,6 +323,8 @@ export function useExpenseSplitter(groupId?: string) {
     removeMember,
     addExpense,
     editExpense,
+    addSettlement,
+    updateMember,
     removeExpense,
     resetMonth
   };

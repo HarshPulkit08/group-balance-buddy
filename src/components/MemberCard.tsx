@@ -1,14 +1,16 @@
 import { Member } from '@/types/expense';
-import { X, User } from 'lucide-react';
+import { X, User, Pencil, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 interface MemberCardProps {
   member: Member & { balance: number };
   onRemove: (id: string) => void;
+  onSettle?: (member: Member) => void;
+  onEdit?: (member: Member) => void;
 }
 
-export function MemberCard({ member, onRemove }: MemberCardProps) {
+export function MemberCard({ member, onRemove, onSettle, onEdit }: MemberCardProps) {
   const isPositive = member.balance > 0.01;
   const isNegative = member.balance < -0.01;
 
@@ -30,14 +32,36 @@ export function MemberCard({ member, onRemove }: MemberCardProps) {
           {isNegative && <span className="text-xs ml-1">owes</span>}
         </p>
       </div>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="opacity-0 group-hover:opacity-100 h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
-        onClick={() => onRemove(member.id)}
-      >
-        <X className="w-4 h-4" />
-      </Button>
+      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+        {isNegative && onSettle && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 px-2 text-xs font-bold gap-1 border-debt/20 text-debt hover:bg-debt/10"
+            onClick={() => onSettle(member)}
+          >
+            <Wallet className="w-3 h-3" /> Settle
+          </Button>
+        )}
+        {onEdit && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10"
+            onClick={() => onEdit(member)}
+          >
+            <Pencil className="w-3.5 h-3.5" />
+          </Button>
+        )}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+          onClick={() => onRemove(member.id)}
+        >
+          <X className="w-4 h-4" />
+        </Button>
+      </div>
     </div>
   );
 }
