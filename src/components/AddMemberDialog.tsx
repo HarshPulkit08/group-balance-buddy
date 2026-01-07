@@ -6,12 +6,13 @@ import { UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface AddMemberDialogProps {
-  onAdd: (name: string) => Promise<boolean> | boolean;
+  onAdd: (name: string, email?: string) => Promise<boolean> | boolean;
 }
 
 export function AddMemberDialog({ onAdd }: AddMemberDialogProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -20,10 +21,11 @@ export function AddMemberDialog({ onAdd }: AddMemberDialogProps) {
 
     setIsSubmitting(true);
     try {
-      const success = await onAdd(name);
+      const success = await onAdd(name, email);
       if (success) {
         toast.success(`${name.trim()} added to the group`);
         setName('');
+        setEmail('');
         setOpen(false);
       } else {
         toast.error('Member already exists');
@@ -48,12 +50,27 @@ export function AddMemberDialog({ onAdd }: AddMemberDialogProps) {
           <DialogTitle>Add a new member</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-          <Input
-            placeholder="Enter name"
-            value={name}
-            onChange={e => setName(e.target.value)}
-            autoFocus
-          />
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-muted-foreground ml-1">Name</label>
+            <Input
+              placeholder="Enter name"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              autoFocus
+              className="rounded-xl h-11"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-muted-foreground ml-1">Email (Optional)</label>
+            <Input
+              placeholder="user@example.com"
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              className="rounded-xl h-11"
+            />
+            <p className="text-[10px] text-muted-foreground px-1">Adding an email allows this person to access the group from their own account.</p>
+          </div>
           <div className="flex gap-2 justify-end">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel

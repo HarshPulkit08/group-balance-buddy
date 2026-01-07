@@ -21,11 +21,30 @@ const Dashboard = () => {
 
     const stats = useMemo(() => {
         const now = new Date();
-        const currentMonthExpenses = groups.flatMap(g => g.expenses || []).filter(e => isSameMonth(new Date(e.createdAt), now));
-        const totalThisMonth = currentMonthExpenses.reduce((sum, e) => sum + e.amount, 0);
-        const activeTrips = groups.filter(g => !g.isSettled).length;
-        return { totalThisMonth, activeTrips };
-    }, [groups]);
+        let totalPaidByUser = 0;
+
+        groups.forEach(group => {
+            const userMember = group.members?.find(m =>
+                m.userId === user?.uid ||
+                (user?.email && m.email === user.email)
+            );
+
+            if (userMember) {
+                const groupMonthExpenses = (group.expenses || [])
+                    .filter(e =>
+                        isSameMonth(new Date(e.createdAt), now) &&
+                        e.payerId === userMember.id
+                    );
+                totalPaidByUser += groupMonthExpenses.reduce((sum, e) => sum + e.amount, 0);
+            }
+        });
+
+        const activeTrips = groups.filter(g => !g.isSettled && g.type === 'trip').length;
+        const activeHouseholds = groups.filter(g => !g.isSettled && g.type === 'household').length;
+        const totalGroups = groups.length;
+
+        return { totalThisMonth: totalPaidByUser, activeTrips, activeHouseholds, totalGroups };
+    }, [groups, user]);
 
     const handleCreateGroup = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -98,7 +117,7 @@ const Dashboard = () => {
 
             <main className="container mx-auto px-4 py-8 relative z-10">
                 {/* Global Stats Summary */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-10">
                     <Card className="bg-gradient-to-br from-primary/10 to-transparent border-primary/10 shadow-sm overflow-hidden group">
                         <CardHeader className="pb-2">
                             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
@@ -108,24 +127,50 @@ const Dashboard = () => {
                         </CardHeader>
                         <CardContent>
                             <h2 className="text-3xl font-bold text-primary group-hover:scale-105 transition-transform origin-left">₹{stats.totalThisMonth.toLocaleString()}</h2>
-                            <p className="text-xs text-muted-foreground mt-1 font-medium">Across all active trips</p>
+                            <p className="text-xs text-muted-foreground mt-1 font-medium">Your personal spendings</p>
                         </CardContent>
                     </Card>
 
                     <Card className="bg-muted/30 border-none shadow-none">
                         <CardHeader className="pb-2">
                             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                                <Calendar className="w-4 h-4 text-primary" />
-                                Active Trips
+                                <Plane className="w-4 h-4 text-primary" />
+                                Trips
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
                             <h2 className="text-3xl font-bold">{stats.activeTrips}</h2>
-                            <p className="text-xs text-muted-foreground mt-1">Ongoing money splitting</p>
+                            <p className="text-xs text-muted-foreground mt-1">Ongoing trip splits</p>
                         </CardContent>
                     </Card>
 
-                    <Card className="bg-muted/30 border-none shadow-none flex flex-col justify-center items-center py-6">
+                    <Card className="bg-muted/30 border-none shadow-none">
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                                <Home className="w-4 h-4 text-primary" />
+                                Household
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <h2 className="text-3xl font-bold">{stats.activeHouseholds}</h2>
+                            <p className="text-xs text-muted-foreground mt-1">Active flat shares</p>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="bg-muted/30 border-none shadow-none">
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                                <Users className="w-4 h-4 text-primary" />
+                                Total Groups
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <h2 className="text-3xl font-bold">{stats.totalGroups}</h2>
+                            <p className="text-xs text-muted-foreground mt-1">All time clusters</p>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="bg-muted/30 border-none shadow-none flex flex-col justify-center items-center py-6 sm:col-span-2 lg:col-span-1">
                         <Dialog open={open} onOpenChange={setOpen}>
                             <DialogTrigger asChild>
                                 <Button className="h-full w-full max-w-[200px] rounded-2xl gap-2 shadow-xl shadow-primary/20 border-t border-white/10 group">
@@ -234,14 +279,16 @@ const Dashboard = () => {
                                         <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0">
                                             Manage group <ArrowRight className="w-4 h-4" />
                                         </div>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 active:scale-95 transition-all opacity-0 group-hover:opacity-100 rounded-full h-8 w-8 ml-auto"
-                                            onClick={(e) => handleDeleteGroup(e, group.id)}
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </Button>
+                                        {group.createdBy === user?.uid && (
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 active:scale-95 transition-all opacity-0 group-hover:opacity-100 rounded-full h-8 w-8 ml-auto"
+                                                onClick={(e) => handleDeleteGroup(e, group.id)}
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </Button>
+                                        )}
                                     </CardFooter>
                                 </Card>
                             </Link>

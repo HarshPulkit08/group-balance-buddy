@@ -17,12 +17,14 @@ interface MemberDetailsDialogProps {
 export function MemberDetailsDialog({ isOpen, onClose, member, onUpdate }: MemberDetailsDialogProps) {
     const [name, setName] = useState('');
     const [upiId, setUpiId] = useState('');
+    const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (member) {
             setName(member.name);
             setUpiId(member.upiId || '');
+            setEmail(member.email || '');
         }
     }, [member]);
 
@@ -34,7 +36,8 @@ export function MemberDetailsDialog({ isOpen, onClose, member, onUpdate }: Membe
         try {
             await onUpdate(member.id, {
                 name: name.trim(),
-                upiId: upiId.trim() || undefined
+                upiId: upiId.trim() || undefined,
+                email: email.trim() || undefined
             });
             toast.success('Member details updated');
             onClose();
@@ -76,6 +79,19 @@ export function MemberDetailsDialog({ isOpen, onClose, member, onUpdate }: Membe
                         />
                         <p className="text-[10px] text-muted-foreground font-medium">
                             Used to generate payment links for settlements.
+                        </p>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="email">Email Address</Label>
+                        <Input
+                            id="email"
+                            placeholder="user@example.com"
+                            value={email}
+                            onChange={e => setEmail(e.target.value)}
+                            className="rounded-xl border-border/50 bg-muted/30"
+                        />
+                        <p className="text-[10px] text-muted-foreground font-medium">
+                            Linking an email allows cross-device access for this member.
                         </p>
                     </div>
                     <div className="flex gap-2 justify-end pt-4">

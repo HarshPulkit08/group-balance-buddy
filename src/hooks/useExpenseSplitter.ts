@@ -31,7 +31,7 @@ export function useExpenseSplitter(groupId?: string) {
     return unsubscribe;
   }, [user, groupId]);
 
-  const addMember = useCallback(async (name: string) => {
+  const addMember = useCallback(async (name: string, email?: string) => {
     if (!user || !groupId) return false;
     const trimmed = name.trim();
     if (!trimmed || members.some(m => m.name.toLowerCase() === trimmed.toLowerCase())) {
@@ -47,13 +47,20 @@ export function useExpenseSplitter(groupId?: string) {
       id: crypto.randomUUID(),
       name: trimmed,
       balance: 0,
-      ...(isCurrentUser ? { userId: user.uid } : {})
+      email: email?.trim() || undefined,
+      ...(isCurrentUser ? { userId: user.uid, email: user.email || undefined } : {})
     };
 
     const groupDocRef = doc(db, 'groups', groupId);
-    await updateDoc(groupDocRef, {
+    const updates: any = {
       members: arrayUnion(newMember)
-    });
+    };
+
+    if (newMember.email) {
+      updates.memberEmails = arrayUnion(newMember.email);
+    }
+
+    await updateDoc(groupDocRef, updates);
     return true;
   }, [user, groupId, members]);
 
@@ -70,8 +77,13 @@ export function useExpenseSplitter(groupId?: string) {
     );
 
     const groupDocRef = doc(db, 'groups', groupId);
+    const memberEmails = updatedMembers
+      .map(m => m.email)
+      .filter((email): email is string => Boolean(email));
+
     await updateDoc(groupDocRef, {
-      members: updatedMembers
+      members: updatedMembers,
+      memberEmails: memberEmails
     });
   }, [user, groupId, members]);
 
@@ -81,10 +93,16 @@ export function useExpenseSplitter(groupId?: string) {
     if (!memberToRemove) return;
 
     const groupDocRef = doc(db, 'groups', groupId);
-    await updateDoc(groupDocRef, {
+    const updates: any = {
       members: arrayRemove(memberToRemove),
       expenses: expenses.filter(e => e.payerId !== id)
-    });
+    };
+
+    if (memberToRemove.email) {
+      updates.memberEmails = arrayRemove(memberToRemove.email);
+    }
+
+    await updateDoc(groupDocRef, updates);
   }, [user, groupId, members, expenses]);
 
   const addExpense = useCallback(async (payerId: string, amount: number, note: string, receiptUrl?: string) => {

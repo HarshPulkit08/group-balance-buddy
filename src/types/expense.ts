@@ -5,6 +5,7 @@ export interface Member {
   avatar?: string;
   userId?: string; // Optional: link to a registered user
   upiId?: string;
+  email?: string;
 }
 
 export interface Expense {
@@ -34,6 +35,7 @@ export interface Group {
   createdAt: Date;
   createdBy: string; // userId
   members: Member[];
+  memberEmails: string[]; // For querying groups by member email
   expenses: Expense[];
   isSettled: boolean;
   type: 'trip' | 'household';

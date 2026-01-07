@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, query, where, onSnapshot, addDoc, doc, updateDoc, deleteDoc, Timestamp } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, addDoc, doc, updateDoc, deleteDoc, Timestamp, or } from 'firebase/firestore';
 import { Group, Member } from '@/types/expense';
 import { useAuth } from '@/components/AuthContext';
 
@@ -14,7 +14,10 @@ export function useGroups() {
 
         const q = query(
             collection(db, 'groups'),
-            where('createdBy', '==', user.uid)
+            or(
+                where('createdBy', '==', user.uid),
+                where('memberEmails', 'array-contains', user.email)
+            )
         );
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -44,7 +47,8 @@ export function useGroups() {
             id: crypto.randomUUID(),
             name: user.displayName || user.email?.split('@')[0] || 'Me',
             balance: 0,
-            userId: user.uid
+            userId: user.uid,
+            email: user.email || undefined
         };
 
         const newGroup = {
@@ -53,6 +57,7 @@ export function useGroups() {
             createdAt: Timestamp.now(),
             createdBy: user.uid,
             members: [initialMember],
+            memberEmails: user.email ? [user.email] : [],
             expenses: [],
             isSettled: false,
             type
