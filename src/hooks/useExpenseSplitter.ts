@@ -314,7 +314,9 @@ export function useExpenseSplitter(groupId?: string) {
   }, [balances]);
 
   const totalSpent = useMemo(() =>
-    expenses.reduce((sum, e) => sum + e.amount, 0),
+    expenses
+      .filter(e => e.type !== 'settlement')
+      .reduce((sum, e) => sum + e.amount, 0),
     [expenses]);
 
   const spendingByMember = useMemo(() => {
