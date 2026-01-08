@@ -61,7 +61,7 @@ export function AddMemberDialog({ onAdd }: AddMemberDialogProps) {
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-muted-foreground ml-1">Email (Optional)</label>
+            <label className="text-sm font-medium text-muted-foreground ml-1">Email</label>
             <Input
               placeholder="user@example.com"
               type="email"
@@ -75,7 +75,7 @@ export function AddMemberDialog({ onAdd }: AddMemberDialogProps) {
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={!name.trim()}>
+            <Button type="submit" disabled={!name.trim() || !email.trim()}>
               Add Member
             </Button>
           </div>

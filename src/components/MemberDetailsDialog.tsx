@@ -98,7 +98,7 @@ export function MemberDetailsDialog({ isOpen, onClose, member, onUpdate }: Membe
                         <Button type="button" variant="ghost" onClick={onClose} className="rounded-xl">
                             Cancel
                         </Button>
-                        <Button type="submit" disabled={!name.trim() || loading} className="rounded-xl font-bold shadow-lg shadow-primary/20">
+                        <Button type="submit" disabled={!name.trim() || !email.trim() || loading} className="rounded-xl font-bold shadow-lg shadow-primary/20">
                             {loading ? 'Saving...' : 'Save Details'}
                         </Button>
                     </div>
