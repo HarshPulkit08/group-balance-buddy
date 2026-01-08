@@ -30,12 +30,21 @@ const Dashboard = () => {
             );
 
             if (userMember) {
-                const groupMonthExpenses = (group.expenses || [])
-                    .filter(e =>
-                        isSameMonth(new Date(e.createdAt), now) &&
-                        e.payerId === userMember.id
-                    );
-                totalPaidByUser += groupMonthExpenses.reduce((sum, e) => sum + e.amount, 0);
+                const groupNet = (group.expenses || [])
+                    .filter(e => isSameMonth(new Date(e.createdAt), now))
+                    .reduce((net, e) => {
+                        // Add amount if user paid (Expense or Settlement)
+                        if (e.payerId === userMember.id) {
+                            return net + e.amount;
+                        }
+                        // Subtract amount if user received a settlement
+                        if (e.type === 'settlement' && e.relatedMemberId === userMember.id) {
+                            return net - e.amount;
+                        }
+                        return net;
+                    }, 0);
+
+                totalPaidByUser += groupNet;
             }
         });
 
