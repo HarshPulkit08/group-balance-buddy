@@ -196,7 +196,7 @@ const Dashboard = () => {
                                     </Tabs>
                                     <div className="space-y-2">
                                         <Input
-                                            placeholder={groupType === 'trip' ? "e.g. Europe 2024 ✈️" : "e.g. Flat 303 🏠"}
+                                            placeholder={groupType === 'trip' ? "e.g. Manali 2026 ✈️" : "e.g. Flat 303 🏠"}
                                             value={newGroupName}
                                             onChange={(e) => setNewGroupName(e.target.value)}
                                             className="h-12 rounded-xl border-2 focus-visible:ring-primary/20"
