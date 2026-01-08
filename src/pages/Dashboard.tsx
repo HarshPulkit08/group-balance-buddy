@@ -223,9 +223,6 @@ const Dashboard = () => {
                     </Card>
                 </div>
 
-                <div className="mb-10">
-                    <ActivityFeed groups={groups} userId={user?.uid || ''} userEmail={user?.email} />
-                </div>
 
                 <div className="flex items-center justify-between mb-6">
                     <div>
@@ -309,8 +306,12 @@ const Dashboard = () => {
                         ))}
                     </div>
                 )}
-            </main>
-        </div>
+
+                <div className="mt-12 mb-10">
+                    <ActivityFeed groups={groups} userId={user?.uid || ''} userEmail={user?.email} />
+                </div>
+            </main >
+        </div >
     );
 };
 
