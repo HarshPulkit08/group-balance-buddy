@@ -10,6 +10,7 @@ import { format, isSameMonth } from 'date-fns';
 import { toast } from 'sonner';
 import { useAuth } from '@/components/AuthContext';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ActivityFeed } from '@/components/ActivityFeed';
 
 const Dashboard = () => {
     const { user, logout } = useAuth();
@@ -220,6 +221,10 @@ const Dashboard = () => {
                             </DialogContent>
                         </Dialog>
                     </Card>
+                </div>
+
+                <div className="mb-10">
+                    <ActivityFeed groups={groups} userId={user?.uid || ''} userEmail={user?.email} />
                 </div>
 
                 <div className="flex items-center justify-between mb-6">
