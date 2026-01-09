@@ -18,6 +18,12 @@ interface RazorpayOptions {
     theme?: {
         color: string;
     };
+    retry?: {
+        enabled: boolean;
+    };
+    modal?: {
+        ondismiss?: () => void;
+    };
 }
 
 export const useRazorpay = () => {
@@ -36,13 +42,20 @@ export const useRazorpay = () => {
         };
     }, []);
 
-    const openRazorpay = (options: RazorpayOptions) => {
+    const openRazorpay = (options: RazorpayOptions, onFailure?: (error: any) => void) => {
         if (!isLoaded) {
             console.error('Razorpay SDK not loaded');
             return;
         }
 
         const rzp = new (window as any).Razorpay(options);
+
+        if (onFailure) {
+            rzp.on('payment.failed', function (response: any) {
+                onFailure(response.error);
+            });
+        }
+
         rzp.open();
     };
 

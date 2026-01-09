@@ -67,7 +67,10 @@ export function SettleDebtDialog({ isOpen, onClose, debtor, settlements, credito
             },
         };
 
-        openRazorpay(options);
+        openRazorpay(options, (error) => {
+            console.error("Payment Failed:", error);
+            toast.error(`Payment Failed: ${error.description || error.reason || 'Unknown error'}`);
+        });
     };
 
     /* 
