@@ -3,6 +3,7 @@ import { Group } from '@/types/expense';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Wallet, TrendingUp, Award, Layers } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { isSameMonth } from 'date-fns';
 
 interface GlobalStatsDialogProps {
     open: boolean;
