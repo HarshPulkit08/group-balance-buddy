@@ -23,12 +23,19 @@ export function ActivityFeed({ groups, userId, userEmail }: ActivityFeedProps) {
                 e.payerId === userMember.id ||
                 (e.type === 'settlement' && e.relatedMemberId === userMember.id)
             )
-            .map(e => ({
-                ...e,
-                groupName: group.name,
-                isPayer: e.payerId === userMember.id,
-                date: e.createdAt instanceof Date ? e.createdAt : (e.createdAt as any).toDate?.() || new Date(e.createdAt)
-            }));
+            .map(e => {
+                const payer = group.members.find(m => m.id === e.payerId);
+                const receiver = e.relatedMemberId ? group.members.find(m => m.id === e.relatedMemberId) : null;
+
+                return {
+                    ...e,
+                    groupName: group.name,
+                    isPayer: e.payerId === userMember.id,
+                    date: e.createdAt instanceof Date ? e.createdAt : (e.createdAt as any).toDate?.() || new Date(e.createdAt),
+                    payerName: payer?.name || 'Unknown',
+                    receiverName: receiver?.name || 'Unknown'
+                };
+            });
     }).sort((a, b) => b.date.getTime() - a.date.getTime());
 
     return (
@@ -51,8 +58,8 @@ export function ActivityFeed({ groups, userId, userEmail }: ActivityFeedProps) {
                                 <div key={activity.id} className="flex items-center justify-between p-3 rounded-2xl hover:bg-muted/50 transition-colors">
                                     <div className="flex items-center gap-3">
                                         <div className={`w-10 h-10 rounded-full flex items-center justify-center ${activity.type === 'settlement'
-                                                ? activity.isPayer ? 'bg-orange-100 text-orange-600' : 'bg-green-100 text-green-600'
-                                                : 'bg-blue-100 text-blue-600'
+                                            ? activity.isPayer ? 'bg-orange-100 text-orange-600' : 'bg-green-100 text-green-600'
+                                            : 'bg-blue-100 text-blue-600'
                                             }`}>
                                             {activity.type === 'settlement' ? (
                                                 activity.isPayer ? <ArrowUpRight className="w-5 h-5" /> : <ArrowDownLeft className="w-5 h-5" />
@@ -62,7 +69,9 @@ export function ActivityFeed({ groups, userId, userEmail }: ActivityFeedProps) {
                                         </div>
                                         <div>
                                             <p className="font-bold text-sm text-foreground">
-                                                {activity.note || (activity.type === 'settlement' ? 'Settlement' : 'Expense')}
+                                                {activity.type === 'settlement'
+                                                    ? (activity.isPayer ? `Paid to ${activity.receiverName}` : `Received from ${activity.payerName}`)
+                                                    : (activity.note || 'Expense')}
                                             </p>
                                             <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-medium">
                                                 <span>{format(activity.date, 'MMM d, h:mm a')}</span>
