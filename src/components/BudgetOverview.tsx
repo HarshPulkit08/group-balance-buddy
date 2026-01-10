@@ -7,6 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Coins, AlertTriangle, TrendingUp, Settings2 } from 'lucide-react';
 import { useGroups } from '@/hooks/useGroups';
+import { useCurrency } from '@/components/CurrencyContext';
 import { toast } from 'sonner';
 
 interface BudgetOverviewProps {
@@ -15,6 +16,7 @@ interface BudgetOverviewProps {
 }
 
 export function BudgetOverview({ group, expenses }: BudgetOverviewProps) {
+    const { currency } = useCurrency();
     const { updateGroupBudget } = useGroups();
     const [budgetInput, setBudgetInput] = useState(group.budget?.toString() || '');
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -83,7 +85,7 @@ export function BudgetOverview({ group, expenses }: BudgetOverviewProps) {
                         </DialogHeader>
                         <div className="space-y-4 pt-4">
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">Budget Limit (₹)</label>
+                                <label className="text-sm font-medium">Budget Limit ({currency})</label>
                                 <Input
                                     type="number"
                                     placeholder="e.g. 50000"
@@ -105,14 +107,14 @@ export function BudgetOverview({ group, expenses }: BudgetOverviewProps) {
             <CardContent>
                 <div className="flex justify-between items-end mb-2">
                     <div>
-                        <p className="text-3xl font-black">₹{totalSpent.toLocaleString()}</p>
+                        <p className="text-3xl font-black">{currency}{totalSpent.toLocaleString()}</p>
                         <p className="text-xs text-muted-foreground font-medium mt-1">
                             Spent this month
                         </p>
                     </div>
                     <div className="text-right">
                         <p className="text-sm font-bold text-muted-foreground">
-                            Target: {budget > 0 ? `₹${budget.toLocaleString()}` : 'Not Set'}
+                            Target: {budget > 0 ? `${currency}${budget.toLocaleString()}` : 'Not Set'}
                         </p>
                         {budget > 0 && (
                             <p className={`text-xs font-bold ${isOverBudget ? 'text-destructive' : 'text-green-600'}`}>
@@ -132,7 +134,7 @@ export function BudgetOverview({ group, expenses }: BudgetOverviewProps) {
                         <div>
                             <p className="text-sm font-bold text-destructive">Budget Exceeded!</p>
                             <p className="text-xs text-destructive/80 mt-0.5">
-                                You've spent more than the allocated budget of ₹{budget.toLocaleString()}.
+                                You've spent more than the allocated budget of {currency}{budget.toLocaleString()}.
                             </p>
                         </div>
                     </div>

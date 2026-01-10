@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useCurrency } from '@/components/CurrencyContext';
 import { Expense } from '@/types/expense';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { format, startOfMonth, eachMonthOfInterval, min as minDate, max as maxDate, isSameMonth } from 'date-fns';
@@ -9,6 +10,7 @@ interface MonthlyStatsProps {
 }
 
 export const MonthlyStats = ({ expenses }: MonthlyStatsProps) => {
+    const { currency } = useCurrency();
     const chartData = useMemo(() => {
         if (expenses.length === 0) return [];
 
@@ -39,7 +41,7 @@ export const MonthlyStats = ({ expenses }: MonthlyStatsProps) => {
                     <Card key={data.month} className="bg-primary/5 border-none shadow-none">
                         <CardContent className="pt-6">
                             <p className="text-sm text-muted-foreground">{data.month}</p>
-                            <h3 className="text-2xl font-bold text-primary">₹{data.amount.toLocaleString()}</h3>
+                            <h3 className="text-2xl font-bold text-primary">{currency}{data.amount.toLocaleString()}</h3>
                         </CardContent>
                     </Card>
                 ))}
@@ -61,7 +63,7 @@ export const MonthlyStats = ({ expenses }: MonthlyStatsProps) => {
                             tickLine={false}
                             fontSize={12}
                             tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                            tickFormatter={(value) => `₹${value}`}
+                            tickFormatter={(value) => `${currency}${value}`}
                         />
                         <Tooltip
                             cursor={{ fill: 'hsl(var(--primary)/0.05)' }}
@@ -70,7 +72,7 @@ export const MonthlyStats = ({ expenses }: MonthlyStatsProps) => {
                                 borderColor: 'hsl(var(--border))',
                                 borderRadius: '8px'
                             }}
-                            formatter={(value: number) => [`₹${value.toLocaleString()}`, 'Spent']}
+                            formatter={(value: number) => [`${currency}${value.toLocaleString()}`, 'Spent']}
                         />
                         <Bar
                             dataKey="amount"

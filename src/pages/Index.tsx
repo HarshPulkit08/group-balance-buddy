@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useExpenseSplitter } from '@/hooks/useExpenseSplitter';
+import { useCurrency } from '@/components/CurrencyContext';
 import { useAuth } from '@/components/AuthContext';
 import { MemberCard } from '@/components/MemberCard';
 import { ExpenseList } from '@/components/ExpenseList';
@@ -23,6 +24,7 @@ import { BudgetOverview } from '@/components/BudgetOverview';
 
 const Index = () => {
   const { id } = useParams<{ id: string }>();
+  const { currency } = useCurrency();
   const navigate = useNavigate();
   const [editingMember, setEditingMember] = useState<any | null>(null);
   const [settlingMember, setSettlingMember] = useState<any | null>(null);
@@ -249,14 +251,14 @@ const Index = () => {
               <Card className="rounded-3xl bg-primary text-primary-foreground border-none shadow-lg shadow-primary/20 p-5 group hover:scale-[1.02] transition-transform">
                 <p className="text-[10px] font-black uppercase tracking-widest opacity-70">Trip Total</p>
                 <div className="flex items-end gap-1 mt-1">
-                  <span className="text-2xl font-black">₹{totalSpent.toLocaleString()}</span>
+                  <span className="text-2xl font-black">{currency}{totalSpent.toLocaleString()}</span>
                 </div>
               </Card>
               <Card className="rounded-3xl bg-card border-none shadow-xl shadow-black/5 p-5 group hover:scale-[1.02] transition-transform border-t border-white/10">
                 <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">My Balance</p>
                 <div className="flex items-end gap-1 mt-1">
                   <span className={`text-2xl font-black ${tripStats.userBalance >= 0 ? 'text-green-500' : 'text-destructive'}`}>
-                    {tripStats.userBalance >= 0 ? '+' : ''}₹{Math.abs(tripStats.userBalance).toLocaleString()}
+                    {tripStats.userBalance >= 0 ? '+' : ''}{currency}{Math.abs(tripStats.userBalance).toLocaleString()}
                   </span>
                 </div>
               </Card>

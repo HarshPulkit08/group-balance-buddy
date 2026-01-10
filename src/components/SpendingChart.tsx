@@ -1,4 +1,5 @@
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { useCurrency } from '@/components/CurrencyContext';
 
 interface SpendingChartProps {
   data: { name: string; amount: number }[];
@@ -14,6 +15,7 @@ const COLORS = [
 ];
 
 export function SpendingChart({ data }: SpendingChartProps) {
+  const { currency } = useCurrency();
   if (data.length === 0 || data.every(d => d.amount === 0)) {
     return (
       <div className="flex items-center justify-center h-64 text-muted-foreground">
@@ -25,17 +27,17 @@ export function SpendingChart({ data }: SpendingChartProps) {
   return (
     <ResponsiveContainer width="100%" height={280}>
       <BarChart data={data} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-        <XAxis 
-          dataKey="name" 
+        <XAxis
+          dataKey="name"
           axisLine={false}
           tickLine={false}
           tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
         />
-        <YAxis 
+        <YAxis
           axisLine={false}
           tickLine={false}
           tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
-          tickFormatter={(value) => `₹${value}`}
+          tickFormatter={(value) => `${currency}${value}`}
         />
         <Tooltip
           content={({ active, payload }) => {
@@ -43,7 +45,7 @@ export function SpendingChart({ data }: SpendingChartProps) {
               return (
                 <div className="bg-card border border-border rounded-lg shadow-lg px-3 py-2">
                   <p className="font-medium text-foreground">{payload[0].payload.name}</p>
-                  <p className="text-primary font-semibold">₹{payload[0].value?.toLocaleString()}</p>
+                  <p className="text-primary font-semibold">{currency}{payload[0].value?.toLocaleString()}</p>
                 </div>
               );
             }

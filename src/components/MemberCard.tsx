@@ -1,4 +1,5 @@
 import { Member } from '@/types/expense';
+import { useCurrency } from '@/components/CurrencyContext';
 import { X, User, Pencil, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -11,6 +12,7 @@ interface MemberCardProps {
 }
 
 export function MemberCard({ member, onRemove, onSettle, onEdit }: MemberCardProps) {
+  const { currency } = useCurrency();
   const isPositive = member.balance > 0.01;
   const isNegative = member.balance < -0.01;
 
@@ -29,7 +31,7 @@ export function MemberCard({ member, onRemove, onSettle, onEdit }: MemberCardPro
           isNegative && "text-debt",
           !isPositive && !isNegative && "text-muted-foreground"
         )}>
-          {isPositive && "+"}₹{Math.abs(member.balance).toFixed(2)}
+          {isPositive && "+"}{currency}{Math.abs(member.balance).toFixed(2)}
           {isPositive && <span className="text-xs ml-1">gets back</span>}
           {isNegative && <span className="text-xs ml-1">owes</span>}
         </p>

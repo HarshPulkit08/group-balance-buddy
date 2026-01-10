@@ -12,9 +12,11 @@ import { useAuth } from '@/components/AuthContext';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ActivityFeed } from '@/components/ActivityFeed';
 import { GlobalStatsDialog } from '@/components/GlobalStatsDialog';
+import { useCurrency, currencies } from '@/components/CurrencyContext';
 
 const Dashboard = () => {
     const { user, logout } = useAuth();
+    const { currency, setCurrency } = useCurrency();
     const { groups, loading, createGroup, deleteGroup } = useGroups();
     const [newGroupName, setNewGroupName] = useState('');
     const [groupType, setGroupType] = useState<'trip' | 'household'>('trip');
@@ -23,12 +25,11 @@ const Dashboard = () => {
     const [statsOpen, setStatsOpen] = useState(false);
 
     const stats = useMemo(() => {
-        // ... (existing stats logic) ...
         const now = new Date();
         let totalPaidByUser = 0;
 
         groups.forEach(group => {
-            const userMember = group.members?.find(m =>
+            const userMember = group.members.find(m =>
                 m.userId === user?.uid ||
                 (user?.email && m.email === user.email)
             );
@@ -58,8 +59,6 @@ const Dashboard = () => {
 
         return { totalThisMonth: totalPaidByUser, activeTrips, activeHouseholds, totalGroups };
     }, [groups, user]);
-
-    // ... (existing handlers) ...
 
     const handleCreateGroup = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -128,6 +127,15 @@ const Dashboard = () => {
                             </div>
                         </div>
                         <div className="flex items-center gap-4">
+                            <select
+                                value={currency}
+                                onChange={(e) => setCurrency(e.target.value as any)}
+                                className="bg-transparent border border-input rounded-md px-2 py-1 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
+                            >
+                                {currencies.map(c => (
+                                    <option key={c} value={c}>{c}</option>
+                                ))}
+                            </select>
                             <Button variant="ghost" size="sm" onClick={logout} className="text-muted-foreground hover:text-destructive">Logout</Button>
                         </div>
                     </div>
@@ -153,7 +161,7 @@ const Dashboard = () => {
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <h2 className="text-3xl font-bold text-primary group-hover:scale-105 transition-transform origin-left">₹{stats.totalThisMonth.toLocaleString()}</h2>
+                            <h2 className="text-3xl font-bold text-primary group-hover:scale-105 transition-transform origin-left">{currency}{stats.totalThisMonth.toLocaleString()}</h2>
                             <p className="text-xs text-muted-foreground mt-1 font-medium">Your personal spendings</p>
                         </CardContent>
                     </Card>
@@ -239,7 +247,6 @@ const Dashboard = () => {
                         </Dialog>
                     </Card>
                 </div>
-
 
                 <div className="flex items-center justify-between mb-6">
                     <div>
@@ -327,8 +334,8 @@ const Dashboard = () => {
                 <div className="mt-12 mb-10">
                     <ActivityFeed groups={groups} userId={user?.uid || ''} userEmail={user?.email} />
                 </div>
-            </main >
-        </div >
+            </main>
+        </div>
     );
 };
 

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Member, Expense } from '@/types/expense';
+import { useCurrency } from '@/components/CurrencyContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -19,6 +20,7 @@ interface AddExpenseFormProps {
 }
 
 export function AddExpenseForm({ members, editingExpense, onAdd, onEdit, onCancel, budget, currentTotal }: AddExpenseFormProps) {
+  const { currency } = useCurrency();
   const [payerId, setPayerId] = useState('');
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
@@ -135,7 +137,7 @@ export function AddExpenseForm({ members, editingExpense, onAdd, onEdit, onCance
           </SelectContent>
         </Select>
         <div className="relative flex-1">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">₹</span>
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">{currency}</span>
           <Input
             type="number"
             placeholder="0.00"

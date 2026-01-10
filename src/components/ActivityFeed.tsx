@@ -1,3 +1,4 @@
+import { useCurrency } from '@/components/CurrencyContext';
 import { Group } from '@/types/expense';
 import { format } from 'date-fns';
 import { ArrowDownLeft, ArrowUpRight, Receipt, Wallet } from 'lucide-react';
@@ -11,6 +12,7 @@ interface ActivityFeedProps {
 }
 
 export function ActivityFeed({ groups, userId, userEmail }: ActivityFeedProps) {
+    const { currency } = useCurrency();
     const activities = groups.flatMap(group => {
         const userMember = group.members.find(m =>
             m.userId === userId || (userEmail && m.email === userEmail)
@@ -82,7 +84,7 @@ export function ActivityFeed({ groups, userId, userEmail }: ActivityFeedProps) {
                                     </div>
                                     <div className={`font-black text-sm ${activity.isPayer ? 'text-destructive' : 'text-green-600'
                                         }`}>
-                                        {activity.isPayer ? '-' : '+'}₹{activity.amount.toLocaleString()}
+                                        {activity.isPayer ? '-' : '+'}{currency}{activity.amount.toLocaleString()}
                                     </div>
                                 </div>
                             ))

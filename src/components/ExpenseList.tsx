@@ -1,4 +1,5 @@
 import { Expense, Member } from '@/types/expense';
+import { useCurrency } from '@/components/CurrencyContext';
 import { Receipt, Pencil, Trash2, Image as ImageIcon, X, ZoomIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { format, isToday, isYesterday, startOfDay } from 'date-fns';
@@ -13,6 +14,7 @@ interface ExpenseListProps {
 }
 
 export function ExpenseList({ expenses, members, onEdit, onRemove }: ExpenseListProps) {
+  const { currency } = useCurrency();
   const [selectedReceipt, setSelectedReceipt] = useState<string | null>(null);
 
   const getMemberName = (id: string) =>
@@ -72,7 +74,7 @@ export function ExpenseList({ expenses, members, onEdit, onRemove }: ExpenseList
                       {getMemberName(expense.payerId)}
                     </span>
                     <span className="text-muted-foreground text-sm font-medium">paid</span>
-                    <span className="font-black text-primary">₹{expense.amount.toLocaleString()}</span>
+                    <span className="font-black text-primary">{currency}{expense.amount.toLocaleString()}</span>
                   </div>
                   {expense.note && (
                     <p className="text-sm text-muted-foreground/80 font-medium truncate mt-0.5">{expense.note}</p>

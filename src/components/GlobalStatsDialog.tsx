@@ -4,6 +4,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recha
 import { Wallet, TrendingUp, Award, Layers } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { isSameMonth } from 'date-fns';
+import { useCurrency } from '@/components/CurrencyContext';
 
 interface GlobalStatsDialogProps {
     open: boolean;
@@ -16,6 +17,7 @@ interface GlobalStatsDialogProps {
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#ff6b6b'];
 
 export function GlobalStatsDialog({ open, onOpenChange, groups, userId, userEmail }: GlobalStatsDialogProps) {
+    const { currency } = useCurrency();
     if (!userId) return null;
 
     const now = new Date();
@@ -91,7 +93,7 @@ export function GlobalStatsDialog({ open, onOpenChange, groups, userId, userEmai
                                         ))}
                                     </Pie>
                                     <Tooltip
-                                        formatter={(value: number) => [`₹${value.toLocaleString()}`, 'Spent']}
+                                        formatter={(value: number) => [`${currency}${value.toLocaleString()}`, 'Spent']}
                                         contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
                                     />
                                     <Legend iconType="circle" />
@@ -116,7 +118,7 @@ export function GlobalStatsDialog({ open, onOpenChange, groups, userId, userEmai
                                         </div>
                                         <p className="font-bold text-muted-foreground text-sm uppercase tracking-wide">Total Spent</p>
                                     </div>
-                                    <p className="text-4xl font-black text-foreground">₹{totalSpent.toLocaleString()}</p>
+                                    <p className="text-4xl font-black text-foreground">{currency}{totalSpent.toLocaleString()}</p>
                                     <p className="text-xs text-muted-foreground mt-1">All time across all groups</p>
                                 </CardContent>
                             </Card>
@@ -127,7 +129,7 @@ export function GlobalStatsDialog({ open, onOpenChange, groups, userId, userEmai
                                         <TrendingUp className="w-4 h-4 text-green-600" />
                                     </div>
                                     <p className="font-bold text-muted-foreground text-xs uppercase mb-1">This Month</p>
-                                    <p className="text-2xl font-black">₹{totalThisMonth.toLocaleString()}</p>
+                                    <p className="text-2xl font-black">{currency}{totalThisMonth.toLocaleString()}</p>
                                 </CardContent>
                             </Card>
                         </div>
@@ -142,7 +144,7 @@ export function GlobalStatsDialog({ open, onOpenChange, groups, userId, userEmai
                                     <p className="text-lg font-bold truncate" title={topGroup?.name || '-'}>
                                         {topGroup?.name || '-'}
                                     </p>
-                                    {topGroup && <p className="text-xs font-medium text-orange-600">₹{topGroup.value.toLocaleString()}</p>}
+                                    {topGroup && <p className="text-xs font-medium text-orange-600">{currency}{topGroup.value.toLocaleString()}</p>}
                                 </CardContent>
                             </Card>
                             <Card className="rounded-2xl border-none bg-muted/40 shadow-none">

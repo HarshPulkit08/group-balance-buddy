@@ -1,4 +1,5 @@
 import { Settlement } from '@/types/expense';
+import { useCurrency } from '@/components/CurrencyContext';
 import { ArrowRight, CheckCircle2, Sparkles } from 'lucide-react';
 
 interface SettlementCardProps {
@@ -6,6 +7,7 @@ interface SettlementCardProps {
 }
 
 export function SettlementCard({ settlements }: SettlementCardProps) {
+  const { currency } = useCurrency();
   if (settlements.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -50,7 +52,7 @@ export function SettlementCard({ settlements }: SettlementCardProps) {
                 <ArrowRight className="w-4 h-4 text-primary animate-pulse" />
                 <div className="h-0.5 w-4 bg-border/50"></div>
               </div>
-              <span className="text-sm font-black text-primary tracking-tight">₹{s.amount.toLocaleString()}</span>
+              <span className="text-sm font-black text-primary tracking-tight">{currency}{s.amount.toLocaleString()}</span>
             </div>
 
             <div className="flex items-center gap-3 flex-1 min-w-0 justify-end">

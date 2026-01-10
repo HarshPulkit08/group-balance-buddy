@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useCurrency } from '@/components/CurrencyContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Member, Settlement } from '@/types/expense';
@@ -16,6 +17,7 @@ interface SettleDebtDialogProps {
 }
 
 export function SettleDebtDialog({ isOpen, onClose, debtor, settlements, creditors, onSettle }: SettleDebtDialogProps) {
+    const { currency } = useCurrency();
     const [loading, setLoading] = useState<string | null>(null);
 
     if (!debtor) return null;
@@ -75,7 +77,7 @@ export function SettleDebtDialog({ isOpen, onClose, debtor, settlements, credito
                                         </div>
                                         <div className="text-right">
                                             <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Amount</p>
-                                            <p className="text-xl font-black text-debt">₹{debt.amount}</p>
+                                            <p className="text-xl font-black text-debt">{currency}{debt.amount}</p>
                                         </div>
                                     </div>
 
