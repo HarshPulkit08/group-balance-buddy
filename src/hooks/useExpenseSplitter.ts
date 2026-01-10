@@ -322,11 +322,9 @@ export function useExpenseSplitter(groupId?: string) {
   const spendingByMember = useMemo(() => {
     const map = new Map<string, number>();
     expenses.forEach(e => {
-      // Exclude settlements from spending stats to match "Trip Total"
-      if (e.type !== 'settlement') {
-        const current = map.get(e.payerId) ?? 0;
-        map.set(e.payerId, current + e.amount);
-      }
+      // Include EVERYTHING (Expenses + Settlements)
+      const current = map.get(e.payerId) ?? 0;
+      map.set(e.payerId, current + e.amount);
     });
 
     return members.map(m => ({

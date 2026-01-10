@@ -32,21 +32,15 @@ export function GlobalStatsDialog({ open, onOpenChange, groups, userId, userEmai
 
         if (!member) return { name: group.name, value: 0 };
 
-        // Calculate direct expenses paid by user
+        // Calculate direct expenses + settlements paid by user
         const expensesPaid = (group.expenses || [])
-            .filter(e => e.payerId === member.id && e.type !== 'settlement')
+            .filter(e => e.payerId === member.id)
             .reduce((sum, e) => sum + e.amount, 0);
 
-        // Calculate this month
+        // Calculate this month (Expenses + Settlements)
         const expensesThisMonth = (group.expenses || [])
-            .filter(e => e.payerId === member.id && e.type !== 'settlement' && isSameMonth(new Date(e.createdAt), now))
+            .filter(e => e.payerId === member.id && isSameMonth(new Date(e.createdAt), now))
             .reduce((sum, e) => sum + e.amount, 0);
-
-        // Add settlements paid by user? Usually "spending" implies money out.
-        // For simplicity in "Where did my money go", we count expenses paid.
-        // If we want "Net Cost", we'd deduct what others owe me, but "Spending" usually means what I paid for.
-        // Let's stick to "My Share" if we had the logic, but we only have "Expenses Paid" easily accessible without deep split logic re-calculation.
-        // Let's explicitly say "Expenses Paid by You".
 
         totalSpent += expensesPaid;
         totalThisMonth += expensesThisMonth;

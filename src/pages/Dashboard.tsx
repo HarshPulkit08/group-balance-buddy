@@ -36,12 +36,12 @@ const Dashboard = () => {
             if (userMember) {
                 const groupNet = (group.expenses || [])
                     .filter(e => isSameMonth(new Date(e.createdAt), now))
-                    .reduce((net, e) => {
-                        // Add amount if user paid (Expense ONLY, exclude settlements)
-                        if (e.payerId === userMember.id && e.type !== 'settlement') {
-                            return net + e.amount;
+                    .reduce((total, e) => {
+                        // Count EVERYTHING the user paid for (Expenses + Settlements)
+                        if (e.payerId === userMember.id) {
+                            return total + e.amount;
                         }
-                        return net;
+                        return total;
                     }, 0);
 
                 totalPaidByUser += groupNet;
