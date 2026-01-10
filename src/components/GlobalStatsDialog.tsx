@@ -17,8 +17,10 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'
 export function GlobalStatsDialog({ open, onOpenChange, groups, userId, userEmail }: GlobalStatsDialogProps) {
     if (!userId) return null;
 
+    const now = new Date();
     // Calculate generic stats
     let totalSpent = 0;
+    let totalThisMonth = 0;
     const spendingByGroup = groups.map(group => {
         // Find current user in this group
         const member = group.members.find(m =>
@@ -34,6 +36,11 @@ export function GlobalStatsDialog({ open, onOpenChange, groups, userId, userEmai
             .filter(e => e.payerId === member.id && e.type !== 'settlement')
             .reduce((sum, e) => sum + e.amount, 0);
 
+        // Calculate this month
+        const expensesThisMonth = (group.expenses || [])
+            .filter(e => e.payerId === member.id && e.type !== 'settlement' && isSameMonth(new Date(e.createdAt), now))
+            .reduce((sum, e) => sum + e.amount, 0);
+
         // Add settlements paid by user? Usually "spending" implies money out.
         // For simplicity in "Where did my money go", we count expenses paid.
         // If we want "Net Cost", we'd deduct what others owe me, but "Spending" usually means what I paid for.
@@ -41,6 +48,7 @@ export function GlobalStatsDialog({ open, onOpenChange, groups, userId, userEmai
         // Let's explicitly say "Expenses Paid by You".
 
         totalSpent += expensesPaid;
+        totalThisMonth += expensesThisMonth;
         return {
             name: group.name,
             value: expensesPaid
@@ -93,22 +101,35 @@ export function GlobalStatsDialog({ open, onOpenChange, groups, userId, userEmai
                                 <p>No expense data available.</p>
                             </div>
                         )}
+                        <p className="text-xs text-muted-foreground mt-2 font-medium">Distribution by Group (All Time)</p>
                     </div>
 
                     {/* Stats Cards Section */}
                     <div className="space-y-4">
-                        <Card className="rounded-2xl border-none bg-gradient-to-br from-primary/10 to-primary/5 shadow-none">
-                            <CardContent className="p-6">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <div className="p-2 bg-primary/20 rounded-full">
-                                        <TrendingUp className="w-5 h-5 text-primary" />
+                        <div className="grid grid-cols-2 gap-4">
+                            <Card className="rounded-2xl border-none bg-gradient-to-br from-primary/10 to-primary/5 shadow-none sm:col-span-2">
+                                <CardContent className="p-6">
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <div className="p-2 bg-primary/20 rounded-full">
+                                            <TrendingUp className="w-5 h-5 text-primary" />
+                                        </div>
+                                        <p className="font-bold text-muted-foreground text-sm uppercase tracking-wide">Total Spent</p>
                                     </div>
-                                    <p className="font-bold text-muted-foreground text-sm uppercase tracking-wide">Total Spent</p>
-                                </div>
-                                <p className="text-4xl font-black text-foreground">₹{totalSpent.toLocaleString()}</p>
-                                <p className="text-xs text-muted-foreground mt-1">Across {groups.length} groups (All time)</p>
-                            </CardContent>
-                        </Card>
+                                    <p className="text-4xl font-black text-foreground">₹{totalSpent.toLocaleString()}</p>
+                                    <p className="text-xs text-muted-foreground mt-1">All time across all groups</p>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="rounded-2xl border-none bg-muted/40 shadow-none">
+                                <CardContent className="p-4">
+                                    <div className="p-2 bg-green-500/10 rounded-full w-fit mb-3">
+                                        <TrendingUp className="w-4 h-4 text-green-600" />
+                                    </div>
+                                    <p className="font-bold text-muted-foreground text-xs uppercase mb-1">This Month</p>
+                                    <p className="text-2xl font-black">₹{totalThisMonth.toLocaleString()}</p>
+                                </CardContent>
+                            </Card>
+                        </div>
 
                         <div className="grid grid-cols-2 gap-4">
                             <Card className="rounded-2xl border-none bg-muted/40 shadow-none">

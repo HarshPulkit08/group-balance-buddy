@@ -37,13 +37,9 @@ const Dashboard = () => {
                 const groupNet = (group.expenses || [])
                     .filter(e => isSameMonth(new Date(e.createdAt), now))
                     .reduce((net, e) => {
-                        // Add amount if user paid (Expense or Settlement)
-                        if (e.payerId === userMember.id) {
+                        // Add amount if user paid (Expense ONLY, exclude settlements)
+                        if (e.payerId === userMember.id && e.type !== 'settlement') {
                             return net + e.amount;
-                        }
-                        // Subtract amount if user received a settlement
-                        if (e.type === 'settlement' && e.relatedMemberId === userMember.id) {
-                            return net - e.amount;
                         }
                         return net;
                     }, 0);
