@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/components/AuthContext';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ActivityFeed } from '@/components/ActivityFeed';
+import { GlobalStatsDialog } from '@/components/GlobalStatsDialog';
 
 const Dashboard = () => {
     const { user, logout } = useAuth();
@@ -19,8 +20,10 @@ const Dashboard = () => {
     const [groupType, setGroupType] = useState<'trip' | 'household'>('trip');
     const [isCreating, setIsCreating] = useState(false);
     const [open, setOpen] = useState(false);
+    const [statsOpen, setStatsOpen] = useState(false);
 
     const stats = useMemo(() => {
+        // ... (existing stats logic) ...
         const now = new Date();
         let totalPaidByUser = 0;
 
@@ -55,6 +58,8 @@ const Dashboard = () => {
 
         return { totalThisMonth: totalPaidByUser, activeTrips, activeHouseholds, totalGroups };
     }, [groups, user]);
+
+    // ... (existing handlers) ...
 
     const handleCreateGroup = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -109,12 +114,16 @@ const Dashboard = () => {
             <header className="border-b border-border bg-card/40 backdrop-blur-md sticky top-0 z-50">
                 <div className="container mx-auto px-4 py-4">
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg shadow-primary/20 hover:scale-105 transition-transform cursor-pointer">
+                        <div
+                            className="flex items-center gap-3 cursor-pointer group"
+                            onClick={() => setStatsOpen(true)}
+                            title="View Spending Stats"
+                        >
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg shadow-primary/20 group-hover:scale-105 transition-transform">
                                 <Wallet className="w-5 h-5 text-primary-foreground" />
                             </div>
                             <div>
-                                <h1 className="text-xl font-bold text-foreground">SplitEase</h1>
+                                <h1 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">SplitEase</h1>
                                 <p className="text-xs text-muted-foreground font-medium">{user?.email}</p>
                             </div>
                         </div>
@@ -124,6 +133,14 @@ const Dashboard = () => {
                     </div>
                 </div>
             </header>
+
+            <GlobalStatsDialog
+                open={statsOpen}
+                onOpenChange={setStatsOpen}
+                groups={groups}
+                userId={user?.uid}
+                userEmail={user?.email}
+            />
 
             <main className="container mx-auto px-4 py-8 relative z-10">
                 {/* Global Stats Summary */}
