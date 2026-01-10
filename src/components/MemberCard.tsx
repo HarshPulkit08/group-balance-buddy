@@ -22,6 +22,7 @@ export function MemberCard({ member, onRemove, onSettle, onEdit }: MemberCardPro
       <div className="flex-1 min-w-0">
         <p className="font-medium text-foreground truncate">{member.name}</p>
         {member.email && <p className="text-[10px] text-muted-foreground truncate -mt-0.5">{member.email}</p>}
+        {member.upiId && <p className="text-[10px] text-primary/80 font-mono truncate">UPI: {member.upiId}</p>}
         <p className={cn(
           "text-sm font-medium",
           isPositive && "text-credit",

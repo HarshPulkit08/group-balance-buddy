@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Member, Settlement } from '@/types/expense';
 import { CreditCard, CheckCircle2, ArrowRight, Wallet } from 'lucide-react';
-import { useRazorpay } from '@/hooks/useRazorpay';
+
 import { toast } from 'sonner';
 
 interface SettleDebtDialogProps {
@@ -17,7 +17,6 @@ interface SettleDebtDialogProps {
 
 export function SettleDebtDialog({ isOpen, onClose, debtor, settlements, creditors, onSettle }: SettleDebtDialogProps) {
     const [loading, setLoading] = useState<string | null>(null);
-    const { isLoaded, openRazorpay } = useRazorpay();
 
     if (!debtor) return null;
 
@@ -33,54 +32,12 @@ export function SettleDebtDialog({ isOpen, onClose, debtor, settlements, credito
         }
     };
 
-    const handleRazorpayPayment = (debt: Settlement, creditor: Member) => {
-        if (!isLoaded) {
-            toast.error('Payment gateway is initializing. Please try again in a moment.');
-            return;
-        }
-
-        // This is a TEST KEY. Please replace with your actual Razorpay Key ID.
-        const RAZORPAY_KEY_ID = 'rzp_test_P132UqF4a0Mv1';
-
-        const options = {
-            key: RAZORPAY_KEY_ID,
-            amount: debt.amount * 100, // Amount in paise
-            currency: 'INR',
-            name: 'SplitEase',
-            description: `Settlement to ${debt.to}`,
-            // image: 'https://your-logo-url.com/logo.png', // Optional
-            handler: function (response: any) {
-                // Payment Success!
-                // console.log("Payment ID: ", response.razorpay_payment_id);
-                toast.success(`Payment successful! ID: ${response.razorpay_payment_id}`);
-
-                // Automatically record the settlement
-                handleSettle(debt);
-            },
-            prefill: {
-                name: debtor?.name || '',
-                email: debtor?.email || '',
-                // contact: '9999999999' // Optional
-            },
-            theme: {
-                color: '#2563EB', // Blue-600 to match app theme
-            },
-        };
-
-        openRazorpay(options, (error) => {
-            console.error("Payment Failed:", error);
-            toast.error(`Payment Failed: ${error.description || error.reason || 'Unknown error'}`);
-        });
-    };
-
-    /* 
-    // OLD UPI LOGIC - Keeping for reference or fallback if needed, but removing for now as requested.
     const getUpiLink = (creditorId: string, amount: number) => {
         const creditor = creditors.find(c => c.id === creditorId);
         if (!creditor?.upiId) return null;
+        // Basic UPI deep link format
         return `upi://pay?pa=${creditor.upiId}&pn=${encodeURIComponent(creditor.name)}&am=${amount}&cu=INR`;
     };
-    */
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -104,13 +61,17 @@ export function SettleDebtDialog({ isOpen, onClose, debtor, settlements, credito
                         </div>
                     ) : (
                         debts.map((debt) => {
-                            // const upiLink = getUpiLink(debt.toId, debt.amount);
+                            const upiLink = getUpiLink(debt.toId, debt.amount);
+                            const creditor = creditors.find(c => c.id === debt.toId);
+                            const hasUpi = !!creditor?.upiId;
+
                             return (
                                 <div key={debt.toId} className="p-4 bg-muted/40 rounded-2xl border border-border/50">
                                     <div className="flex justify-between items-start mb-3">
                                         <div>
                                             <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Owes to</p>
                                             <p className="text-lg font-bold">{debt.to}</p>
+                                            {!hasUpi && <p className="text-[10px] text-destructive font-semibold">No UPI ID set</p>}
                                         </div>
                                         <div className="text-right">
                                             <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Amount</p>
@@ -119,16 +80,24 @@ export function SettleDebtDialog({ isOpen, onClose, debtor, settlements, credito
                                     </div>
 
                                     <div className="flex gap-2 mt-2">
-                                        <Button
-                                            className="flex-1 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white shadow-lg shadow-blue-500/20 rounded-xl font-bold"
-                                            onClick={() => {
-                                                const creditor = creditors.find(c => c.id === debt.toId);
-                                                if (creditor) handleRazorpayPayment(debt, creditor);
-                                            }}
-                                            disabled={!isLoaded}
-                                        >
-                                            Pay with Razorpay <ArrowRight className="w-4 h-4 ml-1" />
-                                        </Button>
+                                        {hasUpi ? (
+                                            <Button
+                                                className="flex-1 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white shadow-lg shadow-blue-500/20 rounded-xl font-bold"
+                                                asChild
+                                            >
+                                                <a href={upiLink!} target="_blank" rel="noopener noreferrer">
+                                                    Pay via UPI <ArrowRight className="w-4 h-4 ml-1" />
+                                                </a>
+                                            </Button>
+                                        ) : (
+                                            <Button
+                                                className="flex-1 bg-muted text-muted-foreground rounded-xl font-bold cursor-not-allowed"
+                                                disabled
+                                            >
+                                                UPI Unavailable
+                                            </Button>
+                                        )}
+
                                         <Button
                                             variant="outline"
                                             className="flex-1 border-primary/20 text-primary hover:bg-primary/5 rounded-xl font-bold"

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
 interface RazorpayOptions {
-    key: string;
+    key?: string;
     amount: number;
     currency: string;
     name: string;
@@ -48,7 +48,19 @@ export const useRazorpay = () => {
             return;
         }
 
-        const rzp = new (window as any).Razorpay(options);
+        // Use key from options or fallback to env variable
+        const rzpOptions = {
+            ...options,
+            key: options.key || import.meta.env.VITE_RAZORPAY_KEY_ID
+        };
+
+        if (!rzpOptions.key) {
+            console.error('Razorpay Key ID is missing. Please set VITE_RAZORPAY_KEY_ID in .env');
+            if (onFailure) onFailure({ error: { description: 'Configuration Error: Missing Razorpay Key' } });
+            return;
+        }
+
+        const rzp = new (window as any).Razorpay(rzpOptions);
 
         if (onFailure) {
             rzp.on('payment.failed', function (response: any) {
