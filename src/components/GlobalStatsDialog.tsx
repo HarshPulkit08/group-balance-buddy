@@ -32,15 +32,21 @@ export function GlobalStatsDialog({ open, onOpenChange, groups, userId, userEmai
 
         if (!member) return { name: group.name, value: 0 };
 
-        // Calculate direct expenses + settlements paid by user
-        const expensesPaid = (group.expenses || [])
-            .filter(e => e.payerId === member.id)
-            .reduce((sum, e) => sum + e.amount, 0);
+        // Calculate direct expenses + settlements paid by user - settlements received
+        const expensesPaid = (group.expenses || []).reduce((sum, e) => {
+            if (e.payerId === member.id) return sum + e.amount;
+            if (e.type === 'settlement' && e.relatedMemberId === member.id) return sum - e.amount;
+            return sum;
+        }, 0);
 
-        // Calculate this month (Expenses + Settlements)
+        // Calculate this month (Expenses + Settlements Paid - Settlements Received)
         const expensesThisMonth = (group.expenses || [])
-            .filter(e => e.payerId === member.id && isSameMonth(new Date(e.createdAt), now))
-            .reduce((sum, e) => sum + e.amount, 0);
+            .filter(e => isSameMonth(new Date(e.createdAt), now))
+            .reduce((sum, e) => {
+                if (e.payerId === member.id) return sum + e.amount;
+                if (e.type === 'settlement' && e.relatedMemberId === member.id) return sum - e.amount;
+                return sum;
+            }, 0);
 
         totalSpent += expensesPaid;
         totalThisMonth += expensesThisMonth;

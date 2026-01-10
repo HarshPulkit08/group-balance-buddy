@@ -325,6 +325,12 @@ export function useExpenseSplitter(groupId?: string) {
       // Include EVERYTHING (Expenses + Settlements)
       const current = map.get(e.payerId) ?? 0;
       map.set(e.payerId, current + e.amount);
+
+      // Subtract if receiving settlement
+      if (e.type === 'settlement' && e.relatedMemberId) {
+        const receiverCurrent = map.get(e.relatedMemberId) ?? 0;
+        map.set(e.relatedMemberId, receiverCurrent - e.amount);
+      }
     });
 
     return members.map(m => ({

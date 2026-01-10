@@ -37,9 +37,13 @@ const Dashboard = () => {
                 const groupNet = (group.expenses || [])
                     .filter(e => isSameMonth(new Date(e.createdAt), now))
                     .reduce((total, e) => {
-                        // Count EVERYTHING the user paid for (Expenses + Settlements)
+                        // Add amount if user paid (Expenses + Settlements)
                         if (e.payerId === userMember.id) {
                             return total + e.amount;
+                        }
+                        // Subtract amount if user received a settlement
+                        if (e.type === 'settlement' && e.relatedMemberId === userMember.id) {
+                            return total - e.amount;
                         }
                         return total;
                     }, 0);
