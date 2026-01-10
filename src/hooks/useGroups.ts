@@ -74,11 +74,16 @@ export function useGroups() {
         await updateDoc(doc(db, 'groups', groupId), { isSettled });
     }, []);
 
+    const updateGroupBudget = useCallback(async (groupId: string, budget: number) => {
+        await updateDoc(doc(db, 'groups', groupId), { budget });
+    }, []);
+
     return {
         groups,
         loading,
         createGroup,
         deleteGroup,
         updateGroupStatus,
+        updateGroupBudget,
     };
 }

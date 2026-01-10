@@ -14,9 +14,11 @@ interface AddExpenseFormProps {
   onAdd: (payerId: string, amount: number, note: string, receiptUrl?: string) => Promise<void>;
   onEdit: (id: string, payerId: string, amount: number, note: string, receiptUrl?: string) => Promise<void>;
   onCancel: () => void;
+  budget?: number;
+  currentTotal?: number;
 }
 
-export function AddExpenseForm({ members, editingExpense, onAdd, onEdit, onCancel }: AddExpenseFormProps) {
+export function AddExpenseForm({ members, editingExpense, onAdd, onEdit, onCancel, budget, currentTotal }: AddExpenseFormProps) {
   const [payerId, setPayerId] = useState('');
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
@@ -58,6 +60,17 @@ export function AddExpenseForm({ members, editingExpense, onAdd, onEdit, onCance
     if (!payerId || isNaN(amountNum) || amountNum <= 0) {
       toast.error('Please fill in all required fields correctly.');
       return;
+    }
+
+    // Budget Warning Check
+    if (budget && currentTotal !== undefined) {
+      const projectedTotal = currentTotal + amountNum - (editingExpense ? editingExpense.amount : 0);
+      if (projectedTotal > budget) {
+        toast.warning('Warning: This expense exceeds the group budget!', {
+          duration: 5000,
+          icon: '⚠️'
+        });
+      }
     }
 
     setIsSubmitting(true);

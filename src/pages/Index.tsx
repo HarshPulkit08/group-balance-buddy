@@ -19,6 +19,7 @@ import { MonthlyStats } from '@/components/MonthlyStats';
 import { useGroups } from '@/hooks/useGroups';
 import { useNavigate, useParams } from 'react-router-dom';
 import { format, isSameMonth } from 'date-fns';
+import { BudgetOverview } from '@/components/BudgetOverview';
 
 const Index = () => {
   const { id } = useParams<{ id: string }>();
@@ -237,6 +238,12 @@ const Index = () => {
 
           {/* Center - Expenses */}
           <div className="lg:col-span-5 space-y-6">
+            {currentGroup?.type === 'household' && (
+              <BudgetOverview
+                group={currentGroup}
+                expenses={expenses}
+              />
+            )}
             {/* Summary Insight Card */}
             <div className="grid grid-cols-2 gap-4">
               <Card className="rounded-3xl bg-primary text-primary-foreground border-none shadow-lg shadow-primary/20 p-5 group hover:scale-[1.02] transition-transform">
@@ -272,6 +279,8 @@ const Index = () => {
                 onAdd={handleAddExpense}
                 onEdit={handleEditExpense}
                 onCancel={handleCancelEdit}
+                budget={currentGroup?.type === 'household' ? currentGroup.budget : undefined}
+                currentTotal={currentGroup?.type === 'household' ? totalSpent : undefined}
               />
 
               <div className="mt-10">

@@ -39,6 +39,7 @@ export interface Group {
   expenses: Expense[];
   isSettled: boolean;
   type: 'trip' | 'household';
+  budget?: number; // Monthly budget limit for households
 }
 
 export type Category = {
