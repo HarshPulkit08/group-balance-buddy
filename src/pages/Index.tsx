@@ -105,13 +105,13 @@ const Index = () => {
     }
   };
 
-  const handleAddExpense = async (payerId: string, amount: number, note: string, receiptUrl?: string) => {
-    await addExpense(payerId, amount, note, receiptUrl);
+  const handleAddExpense = async (payerId: string, amount: number, note: string, receiptUrl?: string, splitType?: 'equal' | 'unequal', splits?: Record<string, number>) => {
+    await addExpense(payerId, amount, note, receiptUrl, splitType, splits);
     toast.success('Expense added');
   };
 
-  const handleEditExpense = async (eid: string, payerId: string, amount: number, note: string, receiptUrl?: string) => {
-    await editExpense(eid, payerId, amount, note, receiptUrl);
+  const handleEditExpense = async (eid: string, payerId: string, amount: number, note: string, receiptUrl?: string, splitType?: 'equal' | 'unequal', splits?: Record<string, number>) => {
+    await editExpense(eid, payerId, amount, note, receiptUrl, splitType, splits);
     toast.success('Expense updated');
     setEditingExpense(null);
   };
