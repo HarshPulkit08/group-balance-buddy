@@ -38,7 +38,10 @@ export function SettleDebtDialog({ isOpen, onClose, debtor, settlements, credito
         const creditor = creditors.find(c => c.id === creditorId);
         if (!creditor?.upiId) return null;
         // Basic UPI deep link format
-        return `upi://pay?pa=${creditor.upiId}&pn=${encodeURIComponent(creditor.name)}&am=${amount}&cu=INR`;
+        // Ensure amount is formatted to 2 decimal places and UPI ID is trimmed
+        const formattedAmount = amount.toFixed(2);
+        const cleanUpiId = creditor.upiId.trim();
+        return `upi://pay?pa=${cleanUpiId}&pn=${encodeURIComponent(creditor.name)}&am=${formattedAmount}&cu=INR&tn=SplitEase Payment`;
     };
 
     return (
