@@ -18,6 +18,8 @@ export interface Expense {
   categoryId?: string;
   type?: 'expense' | 'settlement';
   relatedMemberId?: string; // For settlements: who received the money
+  splitType?: 'equal' | 'unequal';
+  splits?: Record<string, number>; // map of memberId -> amount owed
 }
 
 export interface Settlement {

@@ -105,7 +105,7 @@ export function useExpenseSplitter(groupId?: string) {
     await updateDoc(groupDocRef, updates);
   }, [user, groupId, members, expenses]);
 
-  const addExpense = useCallback(async (payerId: string, amount: number, note: string, receiptUrl?: string) => {
+  const addExpense = useCallback(async (payerId: string, amount: number, note: string, receiptUrl?: string, splitType: 'equal' | 'unequal' = 'equal', splits?: Record<string, number>) => {
     if (!user || !groupId) return;
     const newExpense: Expense = {
       id: crypto.randomUUID(),
@@ -113,6 +113,8 @@ export function useExpenseSplitter(groupId?: string) {
       amount,
       note: note.trim(),
       createdAt: new Date(),
+      splitType,
+      ...(splits ? { splits } : {}),
       ...(receiptUrl ? { receiptUrl } : {}),
     };
 
@@ -140,10 +142,18 @@ export function useExpenseSplitter(groupId?: string) {
     });
   }, [user, groupId]);
 
-  const editExpense = useCallback(async (id: string, payerId: string, amount: number, note: string, receiptUrl?: string) => {
+  const editExpense = useCallback(async (id: string, payerId: string, amount: number, note: string, receiptUrl?: string, splitType: 'equal' | 'unequal' = 'equal', splits?: Record<string, number>) => {
     if (!user || !groupId) return;
     const updatedExpenses = expenses.map(e =>
-      e.id === id ? { ...e, payerId, amount, note: note.trim(), receiptUrl: receiptUrl || e.receiptUrl || "" } : e
+      e.id === id ? {
+        ...e,
+        payerId,
+        amount,
+        note: note.trim(),
+        receiptUrl: receiptUrl || e.receiptUrl || "",
+        splitType,
+        splits: splitType === 'unequal' ? splits : undefined
+      } : e
     );
     // Remove empty string keys before saving if needed, but Firestore handles empty strings.
     // However, it's safer to avoid undefined.
@@ -251,7 +261,6 @@ export function useExpenseSplitter(groupId?: string) {
     expenses.forEach(e => {
       if (e.type === 'settlement') {
         // Settlement Logic: Payer pays Receiver.
-        // Payer balance increases (less debt), Receiver balance decreases (less credit).
         if (e.relatedMemberId) {
           const payerBal = balanceMap.get(e.payerId) ?? 0;
           const receiverBal = balanceMap.get(e.relatedMemberId) ?? 0;
@@ -259,15 +268,40 @@ export function useExpenseSplitter(groupId?: string) {
           balanceMap.set(e.relatedMemberId, receiverBal - e.amount);
         }
       } else {
-        // Normal Expense Logic
-        const current = balanceMap.get(e.payerId) ?? 0;
-        balanceMap.set(e.payerId, current + e.amount);
+        // Expense Logic
+        // 1. Payer gets positive balance (they paid, so they are owed)
+        const currentPayerBal = balanceMap.get(e.payerId) ?? 0;
+        balanceMap.set(e.payerId, currentPayerBal + e.amount);
+
+        // 2. Subtract liability from everyone
+        if (e.splitType === 'unequal' && e.splits) {
+          // Unequal split: Subtract specific amount from each member's balance
+          Object.entries(e.splits).forEach(([memberId, splitAmount]) => {
+            const currentBal = balanceMap.get(memberId) ?? 0;
+            balanceMap.set(memberId, currentBal - splitAmount);
+          });
+
+          // Handle any rounding errors or missing splits if total != sum(splits)? 
+          // We assume validation on entry ensures they match reasonably well.
+        } else {
+          // Equal split (default): Subtract share from everyone
+          // Note: If we add new members LATER, they shouldn't retroactively owe for old equal expenses?
+          // The current architecture calculates balances on the fly based on current members. 
+          // This implies if a new member joins, they split OLD expenses too if we use members.length.
+          // Ideally we should snapshot members at expense creation, but simpler for now:
+          // We divide by current members.length.
+          const share = members.length > 0 ? e.amount / members.length : 0;
+          members.forEach(m => {
+            const bal = balanceMap.get(m.id) ?? 0;
+            balanceMap.set(m.id, bal - share);
+          });
+        }
       }
     });
 
     return members.map(m => ({
       ...m,
-      balance: (balanceMap.get(m.id) ?? 0) - share,
+      balance: balanceMap.get(m.id) ?? 0,
     }));
   }, [members, expenses]);
 
