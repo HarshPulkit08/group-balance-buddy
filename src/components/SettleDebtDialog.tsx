@@ -90,7 +90,10 @@ export function SettleDebtDialog({ isOpen, onClose, debtor, settlements, credito
                                                 className="flex-1 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white shadow-lg shadow-blue-500/20 rounded-xl font-bold"
                                                 asChild
                                             >
-                                                <a href={upiLink!} target="_blank" rel="noopener noreferrer">
+                                                <a
+                                                    href={upiLink!}
+                                                    onClick={() => toast.info('Please approve the payment in your UPI app, then click "Mark Paid" here.')}
+                                                >
                                                     Pay via UPI <ArrowRight className="w-4 h-4 ml-1" />
                                                 </a>
                                             </Button>
